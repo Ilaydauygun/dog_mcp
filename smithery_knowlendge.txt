@@ -1,0 +1,1041 @@
+TITLE: Initialize SDK and List Servers in TypeScript
+DESCRIPTION: Demonstrates how to initialize the Smithery Registry SDK with Bearer Token authentication and list servers using the 'servers.list' method, iterating through paginated results.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/README.md#_snippet_4
+
+LANGUAGE: typescript
+CODE:
+```
+import { SmitheryRegistry } from "@smithery/registry";
+
+const smitheryRegistry = new SmitheryRegistry({
+  bearerAuth: process.env["SMITHERY_BEARER_AUTH"] ?? "",
+});
+
+async function run() {
+  const result = await smitheryRegistry.servers.list({
+    q: "owner:mem0ai is:verified memory",
+  });
+
+  for await (const page of result) {
+    // Handle the page
+    console.log(page);
+  }
+}
+
+run();
+```
+
+----------------------------------------
+
+TITLE: Listing Servers using Smithery SDK (TypeScript)
+DESCRIPTION: Initializes the SmitheryRegistry client with bearer token authentication. Calls the `servers.list` method with a query string to filter results. Iterates asynchronously over the paginated results and logs each page. Requires the `@smithery/registry` package and the `SMITHERY_BEARER_AUTH` environment variable.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/USAGE.md#_snippet_0
+
+LANGUAGE: typescript
+CODE:
+```
+import { SmitheryRegistry } from "@smithery/registry";
+
+const smitheryRegistry = new SmitheryRegistry({
+  bearerAuth: process.env["SMITHERY_BEARER_AUTH"] ?? "",
+});
+
+async function run() {
+  const result = await smitheryRegistry.servers.list({
+    q: "owner:mem0ai is:verified memory",
+  });
+
+  for await (const page of result) {
+    // Handle the page
+    console.log(page);
+  }
+}
+
+run();
+
+```
+
+----------------------------------------
+
+TITLE: Consuming Paginated Results with for await...of in TypeScript
+DESCRIPTION: Demonstrates how to iterate over paginated results returned by SDK methods using the `for await...of` syntax. It shows initializing the SDK and processing each page of results.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/README.md#_snippet_5
+
+LANGUAGE: typescript
+CODE:
+```
+import { SmitheryRegistry } from "@smithery/registry";
+
+const smitheryRegistry = new SmitheryRegistry({
+  bearerAuth: process.env["SMITHERY_BEARER_AUTH"] ?? "",
+});
+
+async function run() {
+  const result = await smitheryRegistry.servers.list({
+    q: "owner:mem0ai is:verified memory",
+  });
+
+  for await (const page of result) {
+    // Handle the page
+    console.log(page);
+  }
+}
+
+run();
+```
+
+----------------------------------------
+
+TITLE: Handling SDK Errors in TypeScript
+DESCRIPTION: Demonstrates how to catch and handle various error types thrown by the Smithery Registry SDK, including `SDKValidationError`, `UnauthorizedError`, and `ServerError`. It shows how to access error details and use the `pretty()` method for validation errors.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/README.md#_snippet_8
+
+LANGUAGE: typescript
+CODE:
+```
+import { SmitheryRegistry } from "@smithery/registry";
+import {
+  SDKValidationError,
+  ServerError,
+  UnauthorizedError,
+} from "@smithery/registry/models/errors";
+
+const smitheryRegistry = new SmitheryRegistry({
+  bearerAuth: process.env["SMITHERY_BEARER_AUTH"] ?? "",
+});
+
+async function run() {
+  let result;
+  try {
+    result = await smitheryRegistry.servers.list({
+      q: "owner:mem0ai is:verified memory",
+    });
+
+    for await (const page of result) {
+      // Handle the page
+      console.log(page);
+    }
+  } catch (err) {
+    switch (true) {
+      // The server response does not match the expected SDK schema
+      case (err instanceof SDKValidationError): {
+        // Pretty-print will provide a human-readable multi-line error message
+        console.error(err.pretty());
+        // Raw value may also be inspected
+        console.error(err.rawValue);
+        return;
+      }
+      case (err instanceof UnauthorizedError): {
+        // Handle err.data$: UnauthorizedErrorData
+        console.error(err);
+        return;
+      }
+      case (err instanceof ServerError): {
+        // Handle err.data$: ServerErrorData
+        console.error(err);
+        return;
+      }
+      default: {
+        // Other errors such as network errors, see HTTPClientErrors for more details
+        throw err;
+      }
+    }
+  }
+}
+
+run();
+```
+
+----------------------------------------
+
+TITLE: Listing Servers using SmitheryRegistry (TypeScript)
+DESCRIPTION: Demonstrates how to use the `smitheryRegistry.servers.list` method to retrieve a paginated list of servers. It shows how to initialize the client, apply filters using the `q` parameter, and iterate through the paginated results.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/sdks/servers/README.md#_snippet_0
+
+LANGUAGE: typescript
+CODE:
+```
+import { SmitheryRegistry } from "@smithery/registry";
+
+const smitheryRegistry = new SmitheryRegistry({
+  bearerAuth: process.env["SMITHERY_BEARER_AUTH"] ?? "",
+});
+
+async function run() {
+  const result = await smitheryRegistry.servers.list({
+    q: "owner:mem0ai is:verified memory",
+  });
+
+  for await (const page of result) {
+    // Handle the page
+    console.log(page);
+  }
+}
+
+run();
+```
+
+----------------------------------------
+
+TITLE: Using Standalone Function with SmitheryRegistryCore (TypeScript)
+DESCRIPTION: Demonstrates how to call a standalone SDK function (`serversList`) using a `SmitheryRegistryCore` instance. It shows the pattern for handling the `Result` type returned by standalone functions, including checking for success (`res.ok`), handling specific error types like `SDKValidationError`, and iterating through paginated results.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/FUNCTIONS.md#_snippet_0
+
+LANGUAGE: typescript
+CODE:
+```
+import { SmitheryRegistryCore } from "@smithery/registry/core.js";
+import { serversList } from "@smithery/registry/funcs/serversList.js";
+import { SDKValidationError } from "@smithery/registry/models/errors/sdkvalidationerror.js";
+
+// Use `SmitheryRegistryCore` for best tree-shaking performance.
+// You can create one instance of it to use across an application.
+const smitheryRegistry = new SmitheryRegistryCore({
+  bearerAuth: process.env["SMITHERY_BEARER_AUTH"] ?? "",
+});
+
+async function run() {
+  const res = await serversList(smitheryRegistry, {
+    q: "owner:mem0ai is:verified memory",
+  });
+
+  switch (true) {
+    case res.ok:
+      // The success case will be handled outside of the switch block
+      break;
+    case res.error instanceof SDKValidationError:
+      // Pretty-print validation errors.
+      return console.log(res.error.pretty());
+    case res.error instanceof Error:
+      return console.log(res.error);
+    default:
+      // TypeScript's type checking will fail on the following line if the above
+      // cases were not exhaustive.
+      res.error satisfies never;
+      throw new Error("Assertion failed: expected error checks to be exhaustive: " + res.error);
+  }
+
+
+  const { value: result } = res;
+
+  for await (const page of result) {
+    // Handle the page
+    console.log(page);
+  }
+}
+
+run();
+```
+
+----------------------------------------
+
+TITLE: Listing Servers using Standalone Function (TypeScript)
+DESCRIPTION: Illustrates how to use the standalone `serversList` function with `SmitheryRegistryCore` for potentially better tree-shaking. It shows client initialization, calling the function with parameters, handling the result (checking for errors), and iterating through the paginated output.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/sdks/servers/README.md#_snippet_1
+
+LANGUAGE: typescript
+CODE:
+```
+import { SmitheryRegistryCore } from "@smithery/registry/core.js";
+import { serversList } from "@smithery/registry/funcs/serversList.js";
+
+// Use `SmitheryRegistryCore` for best tree-shaking performance.
+// You can create one instance of it to use across an application.
+const smitheryRegistry = new SmitheryRegistryCore({
+  bearerAuth: process.env["SMITHERY_BEARER_AUTH"] ?? "",
+});
+
+async function run() {
+  const res = await serversList(smitheryRegistry, {
+    q: "owner:mem0ai is:verified memory",
+  });
+
+  if (!res.ok) {
+    throw res.error;
+  }
+
+  const { value: result } = res;
+
+  for await (const page of result) {
+    // Handle the page
+    console.log(page);
+  }
+}
+
+run();
+```
+
+----------------------------------------
+
+TITLE: Recommended TypeScript Compiler Options (tsconfig.json)
+DESCRIPTION: These TypeScript compiler options are recommended to ensure proper static type support for ECMAScript 2020 features utilized by the SDK, such as async iterables, streams, and fetch-related APIs. Setting 'target' to 'es2020' or higher and including 'es2020', 'dom', and 'dom.iterable' in 'lib' is crucial.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/RUNTIMES.md#_snippet_0
+
+LANGUAGE: JSON
+CODE:
+```
+{
+  "compilerOptions": {
+    "target": "es2020", // or higher
+    "lib": ["es2020", "dom", "dom.iterable"]
+  }
+}
+```
+
+----------------------------------------
+
+TITLE: Configuring Custom HTTP Client Hooks in TypeScript
+DESCRIPTION: This snippet demonstrates how to initialize the HTTPClient with a custom fetcher and add hooks to modify requests before they are sent ('beforeRequest') and handle errors ('requestError'). It shows how to add a custom header, set a request timeout, and log error details.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/README.md#_snippet_10
+
+LANGUAGE: typescript
+CODE:
+```
+import { SmitheryRegistry } from "@smithery/registry";
+import { HTTPClient } from "@smithery/registry/lib/http";
+
+const httpClient = new HTTPClient({
+  // fetcher takes a function that has the same signature as native `fetch`.
+  fetcher: (request) => {
+    return fetch(request);
+  }
+});
+
+httpClient.addHook("beforeRequest", (request) => {
+  const nextRequest = new Request(request, {
+    signal: request.signal || AbortSignal.timeout(5000)
+  });
+
+  nextRequest.headers.set("x-custom-header", "custom value");
+
+  return nextRequest;
+});
+
+httpClient.addHook("requestError", (error, request) => {
+  console.group("Request Error");
+  console.log("Reason:", `${error}`);
+  console.log("Endpoint:", `${request.method} ${request.url}`);
+  console.groupEnd();
+});
+
+const sdk = new SmitheryRegistry({ httpClient });
+```
+
+----------------------------------------
+
+TITLE: General Pattern for Calling Standalone Functions (TypeScript)
+DESCRIPTION: Illustrates the typical pattern for invoking a standalone SDK function that returns a `Result<Value, Error>` type. It shows how to check the `ok` property of the result to determine success or failure and access either the `value` or the `error` accordingly, providing explicit control flow for handling known errors.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/FUNCTIONS.md#_snippet_1
+
+LANGUAGE: typescript
+CODE:
+```
+import { Core } from "<sdk-package-name>";
+import { fetchSomething } from "<sdk-package-name>/funcs/fetchSomething.js";
+
+const client = new Core();
+
+async function run() {
+  const result = await fetchSomething(client, { id: "123" });
+  if (!result.ok) {
+    // You can throw the error or handle it. It's your choice now.
+    throw result.error;
+  }
+
+  console.log(result.value);
+}
+
+run();
+```
+
+----------------------------------------
+
+TITLE: Getting Server Details using SmitheryRegistry Class (TypeScript)
+DESCRIPTION: Demonstrates how to initialize the SmitheryRegistry class and use its servers.get method to fetch server details by qualified name. Requires the @smithery/registry package.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/sdks/servers/README.md#_snippet_2
+
+LANGUAGE: typescript
+CODE:
+```
+import { SmitheryRegistry } from "@smithery/registry";
+
+const smitheryRegistry = new SmitheryRegistry({
+  bearerAuth: process.env["SMITHERY_BEARER_AUTH"] ?? "",
+});
+
+async function run() {
+  const result = await smitheryRegistry.servers.get({
+    qualifiedName: "<value>",
+  });
+
+  // Handle the result
+  console.log(result);
+}
+
+run();
+```
+
+----------------------------------------
+
+TITLE: Enabling Debug Logging in Smithery Registry SDK (TypeScript)
+DESCRIPTION: This snippet shows how to enable debug logging for SDK requests and responses by passing a logger object (like `console`) to the `debugLogger` option during SDK initialization. Note that debug logging can expose sensitive information like API tokens.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/README.md#_snippet_11
+
+LANGUAGE: typescript
+CODE:
+```
+import { SmitheryRegistry } from "@smithery/registry";
+
+const sdk = new SmitheryRegistry({ debugLogger: console });
+```
+
+----------------------------------------
+
+TITLE: Configuring Retries for a Single SDK Operation in TypeScript
+DESCRIPTION: Illustrates how to override the default retry strategy for a specific SDK method call by providing a `retryConfig` object as an argument. It shows configuring a backoff strategy.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/README.md#_snippet_6
+
+LANGUAGE: typescript
+CODE:
+```
+import { SmitheryRegistry } from "@smithery/registry";
+
+const smitheryRegistry = new SmitheryRegistry({
+  bearerAuth: process.env["SMITHERY_BEARER_AUTH"] ?? "",
+});
+
+async function run() {
+  const result = await smitheryRegistry.servers.list({
+    q: "owner:mem0ai is:verified memory",
+  }, {
+    retries: {
+      strategy: "backoff",
+      backoff: {
+        initialInterval: 1,
+        maxInterval: 50,
+        exponent: 1.1,
+        maxElapsedTime: 100,
+      },
+      retryConnectionErrors: false,
+    },
+  });
+
+  for await (const page of result) {
+    // Handle the page
+    console.log(page);
+  }
+}
+
+run();
+```
+
+----------------------------------------
+
+TITLE: Setting Default Retry Strategy for Smithery AI SDK in TypeScript
+DESCRIPTION: Shows how to configure a default retry strategy that applies to all supported operations by providing a `retryConfig` object during the SDK initialization.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/README.md#_snippet_7
+
+LANGUAGE: typescript
+CODE:
+```
+import { SmitheryRegistry } from "@smithery/registry";
+
+const smitheryRegistry = new SmitheryRegistry({
+  retryConfig: {
+    strategy: "backoff",
+    backoff: {
+      initialInterval: 1,
+      maxInterval: 50,
+      exponent: 1.1,
+      maxElapsedTime: 100,
+    },
+    retryConnectionErrors: false,
+  },
+  bearerAuth: process.env["SMITHERY_BEARER_AUTH"] ?? "",
+});
+
+async function run() {
+  const result = await smitheryRegistry.servers.list({
+    q: "owner:mem0ai is:verified memory",
+  });
+
+  for await (const page of result) {
+    // Handle the page
+    console.log(page);
+  }
+}
+
+run();
+```
+
+----------------------------------------
+
+TITLE: Overriding Default Server URL in TypeScript
+DESCRIPTION: Illustrates how to initialize the Smithery Registry SDK client with a specific `serverURL` parameter to connect to a non-default endpoint. This allows overriding the target server for a particular client instance.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/README.md#_snippet_9
+
+LANGUAGE: typescript
+CODE:
+```
+import { SmitheryRegistry } from "@smithery/registry";
+
+const smitheryRegistry = new SmitheryRegistry({
+  serverURL: "https://registry.smithery.ai",
+  bearerAuth: process.env["SMITHERY_BEARER_AUTH"] ?? "",
+});
+
+async function run() {
+  const result = await smitheryRegistry.servers.list({
+    q: "owner:mem0ai is:verified memory",
+  });
+
+  for await (const page of result) {
+    // Handle the page
+    console.log(page);
+  }
+}
+
+run();
+```
+
+----------------------------------------
+
+TITLE: Getting Server Details using Standalone Function (TypeScript)
+DESCRIPTION: Shows how to use the standalone serversGet function with an instance of SmitheryRegistryCore for potentially better tree-shaking. Includes basic error handling. Requires @smithery/registry/core.js and @smithery/registry/funcs/serversGet.js.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/sdks/servers/README.md#_snippet_3
+
+LANGUAGE: typescript
+CODE:
+```
+import { SmitheryRegistryCore } from "@smithery/registry/core.js";
+import { serversGet } from "@smithery/registry/funcs/serversGet.js";
+
+// Use `SmitheryRegistryCore` for best tree-shaking performance.
+// You can create one instance of it to use across an application.
+const smitheryRegistry = new SmitheryRegistryCore({
+  bearerAuth: process.env["SMITHERY_BEARER_AUTH"] ?? "",
+});
+
+async function run() {
+  const res = await serversGet(smitheryRegistry, {
+    qualifiedName: "<value>",
+  });
+
+  if (!res.ok) {
+    throw res.error;
+  }
+
+  const { value: result } = res;
+
+  // Handle the result
+  console.log(result);
+}
+
+run();
+```
+
+----------------------------------------
+
+TITLE: Initializing ServerDetailResponse Object in TypeScript
+DESCRIPTION: This snippet shows how to create and populate an instance of the `ServerDetailResponse` type in TypeScript. It illustrates the expected structure for server details, including identification properties, connection configurations (like HTTP with API key authentication), security scan results, and definitions of available tools with their input schemas.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/components/serverdetailresponse.md#_snippet_0
+
+LANGUAGE: typescript
+CODE:
+```
+import { ServerDetailResponse } from "@smithery/registry/models/components";
+
+let value: ServerDetailResponse = {
+  qualifiedName: "smithery-ai/fetch",
+  displayName: "Fetch",
+  iconUrl: "https://example.com/icon.png",
+  remote: true,
+  connections: [
+    {
+      type: "http",
+      url: "https://api.smithery.ai/mcp/fetch",
+      configSchema: {
+        "type": "object",
+        "properties": {
+          "apiKey": {
+            "type": "string",
+            "description": "API key for authentication"
+          }
+        },
+        "required": [
+          "apiKey"
+        ]
+      }
+    }
+  ],
+  security: {
+    scanPassed: true
+  },
+  tools: [
+    {
+      name: "fetch_url",
+      description: "Fetches content from a URL",
+      inputSchema: {
+        type: "object",
+        properties: {
+          "url": {
+            "type": "string",
+            "description": "URL to fetch content from"
+          }
+        },
+        additionalProperties: {
+          "required": [
+            "url"
+          ]
+        }
+      }
+    }
+  ]
+};
+```
+
+----------------------------------------
+
+TITLE: Example Usage of ListServersResponse in TypeScript
+DESCRIPTION: This snippet demonstrates how to create and populate an instance of the ListServersResponse type, showing the expected structure for the server list and pagination details.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/operations/listserversresponse.md#_snippet_0
+
+LANGUAGE: typescript
+CODE:
+```
+import { ListServersResponse } from "@smithery/registry/models/operations";
+
+let value: ListServersResponse = {
+  result: {
+    servers: [
+      {
+        qualifiedName: "smithery-ai/fetch",
+        displayName: "Fetch",
+        description: "A server for fetching web content",
+        homepage: "https://smithery.ai/server/smithery-ai/fetch",
+        useCount: 12345,
+        createdAt: new Date("2023-01-01T12:00:00Z")
+      }
+    ],
+    pagination: {
+      currentPage: 1,
+      pageSize: 10,
+      totalPages: 5,
+      totalCount: 47
+    }
+  }
+};
+```
+
+----------------------------------------
+
+TITLE: Example Usage - ServerListResponse - TypeScript
+DESCRIPTION: This snippet demonstrates how to create an instance of the ServerListResponse type in TypeScript, populating it with sample data for a list of servers and pagination details. It requires importing the ServerListResponse type from the specified module.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/components/serverlistresponse.md#_snippet_0
+
+LANGUAGE: typescript
+CODE:
+```
+import { ServerListResponse } from "@smithery/registry/models/components";
+
+let value: ServerListResponse = {
+  servers: [
+    {
+      qualifiedName: "smithery-ai/fetch",
+      displayName: "Fetch",
+      description: "A server for fetching web content",
+      homepage: "https://smithery.ai/server/smithery-ai/fetch",
+      useCount: 12345,
+      createdAt: new Date("2023-01-01T12:00:00Z")
+    }
+  ],
+  pagination: {
+    currentPage: 1,
+    pageSize: 10,
+    totalPages: 5,
+    totalCount: 47
+  }
+};
+```
+
+----------------------------------------
+
+TITLE: Initializing a Tool Object in TypeScript
+DESCRIPTION: This snippet demonstrates how to create an instance of the Tool type, defining its name, description, and the JSON schema for its required input parameters. It shows the basic structure for defining a tool that accepts a URL.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/components/tool.md#_snippet_0
+
+LANGUAGE: TypeScript
+CODE:
+```
+import { Tool } from "@smithery/registry/models/components";
+
+let value: Tool = {
+  name: "fetch_url",
+  description: "Fetches content from a URL",
+  inputSchema: {
+    type: "object",
+    properties: {
+      "url": {
+        "type": "string",
+        "description": "URL to fetch content from"
+      }
+    },
+    additionalProperties: {
+      "required": [
+        "url"
+      ]
+    }
+  }
+};
+```
+
+----------------------------------------
+
+TITLE: Defining InputSchema in TypeScript
+DESCRIPTION: This snippet demonstrates how to create an InputSchema object in TypeScript. It defines a schema for an object with a single required string property named 'url', which is used to specify parameters for a tool.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/components/inputschema.md#_snippet_0
+
+LANGUAGE: TypeScript
+CODE:
+```
+import { InputSchema } from "@smithery/registry/models/components";
+
+let value: InputSchema = {
+  type: "object",
+  properties: {
+    "url": {
+      "type": "string",
+      "description": "URL to fetch content from"
+    }
+  },
+  additionalProperties: {
+    "required": [
+      "url"
+    ]
+  }
+};
+```
+
+----------------------------------------
+
+TITLE: Initializing ConnectionInfo in TypeScript
+DESCRIPTION: This snippet demonstrates how to create an instance of the ConnectionInfo type in TypeScript. It shows the structure including the type, URL, and a JSON schema for configuration options. It requires importing the ConnectionInfo type from the @smithery/registry/models/components module.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/components/connectioninfo.md#_snippet_0
+
+LANGUAGE: typescript
+CODE:
+```
+import { ConnectionInfo } from "@smithery/registry/models/components";
+
+let value: ConnectionInfo = {
+  type: "http",
+  url: "https://api.smithery.ai/mcp/fetch",
+  configSchema: {
+    "type": "object",
+    "properties": {
+      "apiKey": {
+        "type": "string",
+        "description": "API key for authentication"
+      }
+    },
+    "required": [
+      "apiKey"
+    ]
+  }
+};
+```
+
+----------------------------------------
+
+TITLE: Creating ListServersRequest Instance (TypeScript)
+DESCRIPTION: This snippet demonstrates how to import the ListServersRequest class and create an instance of it, setting the 'q' property to specify a search query for filtering servers based on owner, verification status, and keywords.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/operations/listserversrequest.md#_snippet_0
+
+LANGUAGE: typescript
+CODE:
+```
+import { ListServersRequest } from "@smithery/registry/models/operations";
+
+let value: ListServersRequest = {
+  q: "owner:mem0ai is:verified memory",
+};
+```
+
+----------------------------------------
+
+TITLE: Instantiating GetServerRequest in TypeScript
+DESCRIPTION: This snippet demonstrates how to create an instance of the `GetServerRequest` object in TypeScript. It requires importing the class from the `@smithery/registry/models/operations` module and setting the mandatory `qualifiedName` field.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/operations/getserverrequest.md#_snippet_0
+
+LANGUAGE: typescript
+CODE:
+```
+import { GetServerRequest } from "@smithery/registry/models/operations";
+
+let value: GetServerRequest = {
+  qualifiedName: "<value>",
+};
+```
+
+----------------------------------------
+
+TITLE: Spawn Stateless MCP Server (TypeScript)
+DESCRIPTION: Demonstrates how to create and start a stateless MCP server using the Smithery SDK. It defines a function to create MCP server instances per session and listens on the specified port.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/sdk/README.md#_snippet_1
+
+LANGUAGE: typescript
+CODE:
+```
+import { createStatelessServer } from '@smithery/sdk/server/stateless.js'
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+
+// Create your MCP server function
+function createMcpServer({ sessionId, config }) {
+  // Create and return a server instance
+  // https://github.com/modelcontextprotocol/typescript-sdk?tab=readme-ov-file#core-concepts
+  const mcpServer = new McpServer({
+    name: "My App",
+    version: "1.0.0"
+  })
+
+  // ...
+  
+  return mcpServer.server
+}
+
+// Create the stateless server using your MCP server function.
+const { app } = createStatelessServer(createMcpServer)
+
+// Start the server
+const PORT = process.env.PORT || 8081
+app.listen(PORT, () => {
+  console.log(`MCP server running on port ${PORT}`)
+})
+```
+
+----------------------------------------
+
+TITLE: Creating ServerListItem Instance in TypeScript
+DESCRIPTION: This snippet demonstrates how to initialize a ServerListItem object in TypeScript. It shows the required fields and provides example values for each property, including importing the necessary type definition.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/components/serverlistitem.md#_snippet_0
+
+LANGUAGE: typescript
+CODE:
+```
+import { ServerListItem } from "@smithery/registry/models/components";
+
+let value: ServerListItem = {
+  qualifiedName: "smithery-ai/fetch",
+  displayName: "Fetch",
+  description: "A server for fetching web content",
+  homepage: "https://smithery.ai/server/smithery-ai/fetch",
+  useCount: 12345,
+  createdAt: new Date("2023-01-01T12:00:00Z")
+};
+```
+
+----------------------------------------
+
+TITLE: Initializing Pagination Object in TypeScript
+DESCRIPTION: This snippet demonstrates how to create an instance of the Pagination type in TypeScript. It shows the required fields (currentPage, pageSize, totalPages, totalCount) and provides example values for each.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/components/pagination.md#_snippet_0
+
+LANGUAGE: typescript
+CODE:
+```
+import { Pagination } from "@smithery/registry/models/components";
+
+let value: Pagination = {
+  currentPage: 1,
+  pageSize: 10,
+  totalPages: 5,
+  totalCount: 47,
+};
+```
+
+----------------------------------------
+
+TITLE: Instantiating ServerDetailResponseSecurity in TypeScript
+DESCRIPTION: This snippet demonstrates how to create an instance of the ServerDetailResponseSecurity object in TypeScript, showing the basic structure and assigning a value to the `scanPassed` field.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/components/serverdetailresponsesecurity.md#_snippet_0
+
+LANGUAGE: typescript
+CODE:
+```
+import { ServerDetailResponseSecurity } from "@smithery/registry/models/components";
+
+let value: ServerDetailResponseSecurity = {
+  scanPassed: true,
+};
+```
+
+----------------------------------------
+
+TITLE: Using ToolType in TypeScript
+DESCRIPTION: Demonstrates how to import and declare a variable with the ToolType type. It shows assigning a valid string literal value to a variable typed as ToolType.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/components/tooltype.md#_snippet_0
+
+LANGUAGE: typescript
+CODE:
+```
+import { ToolType } from "@smithery/registry/models/components";
+
+let value: ToolType = "object";
+```
+
+----------------------------------------
+
+TITLE: Assigning ConnectionInfoType in TypeScript
+DESCRIPTION: Demonstrates how to declare a variable of type `ConnectionInfoType` and assign a valid value to it. Requires importing the type from the `@smithery/registry/models/components` module.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/components/connectioninfotype.md#_snippet_0
+
+LANGUAGE: typescript
+CODE:
+```
+import { ConnectionInfoType } from "@smithery/registry/models/components";
+
+let value: ConnectionInfoType = "http";
+```
+
+----------------------------------------
+
+TITLE: Importing and Initializing Security Model in TypeScript
+DESCRIPTION: This snippet demonstrates how to import the Security type from the @smithery/registry/models/components module and initialize a variable of this type. It shows the basic structure for creating an instance of the Security model.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/components/security.md#_snippet_0
+
+LANGUAGE: typescript
+CODE:
+```
+import { Security } from "@smithery/registry/models/components";
+
+let value: Security = {};
+```
+
+----------------------------------------
+
+TITLE: Install Smithery Registry SDK with NPM
+DESCRIPTION: Installs the @smithery/registry SDK package using the npm package manager.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/README.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+npm add @smithery/registry
+```
+
+----------------------------------------
+
+TITLE: Install Smithery Registry SDK with PNPM
+DESCRIPTION: Installs the @smithery/registry SDK package using the pnpm package manager.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/README.md#_snippet_1
+
+LANGUAGE: bash
+CODE:
+```
+pnpm add @smithery/registry
+```
+
+----------------------------------------
+
+TITLE: Install Smithery Registry SDK with Bun
+DESCRIPTION: Installs the @smithery/registry SDK package using the Bun package manager.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/README.md#_snippet_2
+
+LANGUAGE: bash
+CODE:
+```
+bun add @smithery/registry
+```
+
+----------------------------------------
+
+TITLE: Install Smithery Registry SDK with Yarn
+DESCRIPTION: Installs the @smithery/registry SDK package using the Yarn package manager. Note that peer dependencies like 'zod' must be installed separately.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/README.md#_snippet_3
+
+LANGUAGE: bash
+CODE:
+```
+yarn add @smithery/registry zod
+
+# Note that Yarn does not install peer dependencies automatically. You will need
+# to install zod as shown above.
+```
+
+----------------------------------------
+
+TITLE: Install Smithery and MCP SDKs (Bash)
+DESCRIPTION: Installs the necessary Smithery and Model Context Protocol (MCP) SDK packages using npm.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/sdk/README.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+npm install @smithery/sdk @modelcontextprotocol/sdk
+```
+
+----------------------------------------
+
+TITLE: ToolType String Literal Value
+DESCRIPTION: Illustrates one of the possible string literal values that can be assigned to a variable of type ToolType. This snippet shows the 'object' value.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/components/tooltype.md#_snippet_1
+
+LANGUAGE: typescript
+CODE:
+```
+"object"
+```
+
+----------------------------------------
+
+TITLE: Possible Values for ConnectionInfoType in TypeScript
+DESCRIPTION: Lists the allowed string literal values for the `ConnectionInfoType` union type, indicating the supported connection methods.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/components/connectioninfotype.md#_snippet_1
+
+LANGUAGE: typescript
+CODE:
+```
+"http" | "stdio"
+```
+
+----------------------------------------
+
+TITLE: Importing NotFoundError in TypeScript
+DESCRIPTION: This snippet demonstrates how to import the NotFoundError class from the @smithery/registry/models/errors module. Note that no specific usage examples are provided for this model.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/errors/notfounderror.md#_snippet_0
+
+LANGUAGE: typescript
+CODE:
+```
+import { NotFoundError } from "@smithery/registry/models/errors";
+
+// No examples available for this model
+```
+
+----------------------------------------
+
+TITLE: Importing ServerError Class (TypeScript)
+DESCRIPTION: This snippet demonstrates how to import the ServerError class from the @smithery/registry/models/errors module. Note that no functional example usage is provided in the source text.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/errors/servererror.md#_snippet_0
+
+LANGUAGE: TypeScript
+CODE:
+```
+import { ServerError } from "@smithery/registry/models/errors";
+
+// No examples available for this model
+```
+
+----------------------------------------
+
+TITLE: Importing UnauthorizedError in TypeScript
+DESCRIPTION: Imports the UnauthorizedError class from the registry models. Note that no usage examples are provided for this specific error model.
+SOURCE: https://github.com/smithery-ai/sdk/blob/main/typescript/registry/docs/models/errors/unauthorizederror.md#_snippet_0
+
+LANGUAGE: TypeScript
+CODE:
+```
+import { UnauthorizedError } from "@smithery/registry/models/errors";
+
+// No examples available for this model
+```
