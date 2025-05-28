@@ -19,7 +19,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 # Copy application code
 COPY dog_mcp_server.py .
-COPY README.md .
+#COPY README.md .
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash app && \
